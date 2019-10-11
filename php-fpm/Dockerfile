@@ -36,8 +36,31 @@ RUN set -ex; \
       | sort -u \
       | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
   )"; \
-#  apk add --virtual .phpmyadmin-phpexts-rundeps $runDeps; \
+  apk add --virtual .phpmyadmin-phpexts-rundeps $runDeps; \
   apk del .build-deps
+
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN { \
+        echo 'opcache.memory_consumption=128'; \
+        echo 'opcache.interned_strings_buffer=8'; \
+        echo 'opcache.max_accelerated_files=4000'; \
+        echo 'opcache.revalidate_freq=2'; \
+        echo 'opcache.fast_shutdown=1'; \
+        echo 'opcache.enable_cli=1'; \
+    } > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
+    \
+    { \
+        echo 'session.cookie_httponly = 1'; \
+        echo 'session.use_strict_mode = 1'; \
+    } > /usr/local/etc/php/conf.d/session-strict.ini; \
+    \
+    { \
+        echo 'allow_url_fopen = Off'; \
+        echo 'max_execution_time = 600'; \
+        echo 'memory_limit = 512M'; \
+    } > /usr/local/etc/php/conf.d/phpmyadmin-misc.ini
+
 
 COPY www.conf /usr/local/etc/php-fpm.d/
 COPY php.ini /usr/local/etc/php/
