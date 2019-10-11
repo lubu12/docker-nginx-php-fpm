@@ -35,5 +35,5 @@ docker-compose up -d
 ## Rebuild the docker image after nginx or php-fpm configuration file is changed
 ```
 docker-compose down
-docker-compose build
+docker-compose up --build -d
 ```
